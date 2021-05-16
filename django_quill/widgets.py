@@ -34,30 +34,37 @@ class QuillWidget(forms.Textarea):
             'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js',
             'django_quill/django_quill.js',
             'https://cdn.quilljs.com/1.3.7/quill.min.js',
+            'https://unpkg.com/quill-image-uploader@1.2.1/dist/quill.imageUploader.min.js'
         )
         css = {
             'all': (
                 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/darcula.min.css',
                 'django_quill/django_quill.css',
                 'https://cdn.quilljs.com/1.3.7/quill.snow.css',
+                'https://unpkg.com/quill-image-uploader@1.2.1/dist/quill.imageUploader.min.css'
             )
         }
 
     def __init__(self, config_name='default', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.config = DEFAULT_CONFIG.copy()
+        self.image_upload_url = getattr(
+            settings, 'QUILL_IMAGE_UPLOAD_URL', None)
         configs = getattr(settings, 'QUILL_CONFIGS', None)
         if configs:
             if isinstance(configs, Mapping):
                 if config_name in configs:
                     config = configs[config_name]
                     if not isinstance(config, Mapping):
-                        raise ImproperlyConfigured('QUILL_CONFIGS["%s"] setting must be a Mapping object' % config_name)
+                        raise ImproperlyConfigured(
+                            'QUILL_CONFIGS["%s"] setting must be a Mapping object' % config_name)
                     self.config.update(config)
                 else:
-                    raise ImproperlyConfigured('No configuration named "%s" found in your QUILL_CONFIGS' % config_name)
+                    raise ImproperlyConfigured(
+                        'No configuration named "%s" found in your QUILL_CONFIGS' % config_name)
             else:
-                raise ImproperlyConfigured('QUILL_CONFIGS settings must be a Mapping object')
+                raise ImproperlyConfigured(
+                    'QUILL_CONFIGS settings must be a Mapping object')
 
     def render(self, name, value, attrs=None, renderer=None):
         if renderer is None:
@@ -77,6 +84,7 @@ class QuillWidget(forms.Textarea):
             'id': final_attrs['id'],
             'name': final_attrs['name'],
             'config': json_encode(self.config),
+            'imageUploadURL': self.image_upload_url,
             'quill': final_attrs.get('quill', None),
             'value': final_attrs.get('value', None),
         }))
